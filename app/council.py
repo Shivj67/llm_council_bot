@@ -8,10 +8,8 @@ class LLMCouncil:
     def __init__(self, api_key):
         genai.configure(api_key=api_key)
         # Initialize model with Google Search tool enabled
-        self.model = genai.GenerativeModel(
-            'gemini-2.0-flash',
-            tools=['google_search_retrieval']
-        )
+        # Switching to the ultra-stable 1.5 Flash for guaranteed free-tier access
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
         self.logger = logging.getLogger(__name__)
 
     def run_council(self, user_query, user_id, mode="learning", depth="standard", media=None):
@@ -45,7 +43,7 @@ class LLMCouncil:
                 if media:
                     content_parts.append(media) # Append image/audio data if present
 
-                time.sleep(6) # Rate limit protection
+                time.sleep(12) # Rate limit protection
                 
                 response = self.model.generate_content(content_parts)
                 contribution = response.text if response and hasattr(response, 'text') else f"Agent {agent} failed to respond."
