@@ -8,8 +8,8 @@ class LLMCouncil:
     def __init__(self, api_key):
         genai.configure(api_key=api_key)
         # Initialize model with Google Search tool enabled
-        # Using the production-stable alias to ensure compatibility
-        self.model = genai.GenerativeModel('gemini-flash-latest')
+        # Switching to 2.0 Flash for a fresh quota
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
         self.logger = logging.getLogger(__name__)
 
     def run_council(self, user_query, user_id, mode="learning", depth="standard", media=None):
@@ -23,13 +23,13 @@ class LLMCouncil:
         mode_context = MODE_PROMPTS.get(mode.lower(), MODE_PROMPTS["learning"])
         history = f"--- CONVERSATION HISTORY ---\n{history_context}\n\n--- CURRENT TASK ---\nUSER QUERY: {user_query}\nMODE CONTEXT: {mode_context}\n"
         
-        # 2. Dynamic Agent Selection
+        # 2. Dynamic Agent Selection (Reduced for Quota Stability)
         if depth == "quick":
             agent_order = ["Analyst", "Final Judge"]
         elif depth == "deep":
-            agent_order = ["Analyst", "Researcher", "Critic", "Optimizer", "Final Judge"]
+            agent_order = ["Analyst", "Critic", "Final Judge"]
         else: # standard
-            agent_order = ["Analyst", "Researcher", "Final Judge"]
+            agent_order = ["Analyst", "Final Judge"]
 
         final_response = ""
 
@@ -43,7 +43,7 @@ class LLMCouncil:
                 if media:
                     content_parts.append(media) # Append image/audio data if present
 
-                time.sleep(15) # Rate limit protection
+                time.sleep(20) # Rate limit protection
                 
                 response = self.model.generate_content(content_parts)
                 contribution = response.text if response and hasattr(response, 'text') else f"Agent {agent} failed to respond."
